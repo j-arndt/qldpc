@@ -6,7 +6,7 @@ authors:
   - family-names: Arndt
     given-names: J.
 repository-code: "https://github.com/j-arndt/qldpc"
-license: Apache-2.0
+license: GPL-3.0-only
 keywords:
   - quantum error correction
   - qLDPC
