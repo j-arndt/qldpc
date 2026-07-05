@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Justin Arndt. All rights reserved.
+# Licensed under the GNU GPLv3. For commercial licensing and proprietary
+# hardware mapping, see the LICENSE file (dual-licensing notice at top).
 """
 logical.py -- GF(2) linear algebra (numpy uint8) for BB codes: row reduction, rank,
 exact solving of H_X^T w = r (or reporting unsolvable), kernel basis of H_X, and the
