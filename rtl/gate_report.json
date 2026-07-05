@@ -1,0 +1,26 @@
+[
+  {
+    "code": "code72",
+    "word_bits": 36,
+    "xor2_syndrome_layer(x2 for corr+inj)": 360,
+    "xor2_stabilizer_layer": 144,
+    "xor2_failure_layer": 180,
+    "xor2_comparators": 72,
+    "or2_reductions": 140,
+    "xor2_and2_parity": 142,
+    "total_2input_gates_approx": 1038,
+    "combinational_depth_approx": 10
+  },
+  {
+    "code": "gross144",
+    "word_bits": 72,
+    "xor2_syndrome_layer(x2 for corr+inj)": 720,
+    "xor2_stabilizer_layer": 288,
+    "xor2_failure_layer": 360,
+    "xor2_comparators": 144,
+    "or2_reductions": 284,
+    "xor2_and2_parity": 286,
+    "total_2input_gates_approx": 2082,
+    "combinational_depth_approx": 11
+  }
+]
