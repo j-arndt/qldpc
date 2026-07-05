@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Justin Arndt. All rights reserved.
+# Licensed under the GNU GPLv3. For commercial licensing and proprietary
+# hardware mapping, see the LICENSE file (dual-licensing notice at top).
 """rtl_equiv.py -- Stage B equivalence harness for the Lean-emitted RTL.
 
 Checks, per emitted netlist (rtl/<code>_netlist.json + _checker.v):
@@ -35,7 +38,7 @@ from codes import get_code
 from decoder import decode_batch
 
 REPO = Path(__file__).resolve().parent.parent
-RTL = REPO / "rtl"
+RTL = REPO / "hardware"
 
 CODES = {"code72": "code72", "gross144": "gross144"}
 SEED = 20260708
