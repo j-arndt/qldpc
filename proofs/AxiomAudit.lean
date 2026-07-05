@@ -21,6 +21,8 @@ footprint; a third party can re-run it with one command.
 import proofs.QCCirculant
 import proofs.BBCode
 import proofs.DecoderCert
+import proofs.PackedCert
+import proofs.Netlist
 
 -- F1: circulant algebra bridge
 #print axioms QCCirculant.circulant_mulVec
@@ -50,3 +52,16 @@ import proofs.DecoderCert
 #print axioms QLDPC.DecoderCert.witness_exclusive
 #print axioms QLDPC.DecoderCert.validateRun_sound
 #print axioms QLDPC.DecoderCert.exampleRun_valid
+
+-- Stage A: packed (kernel-fast) certificates
+#print axioms QLDPC.Packed.unpack_xor
+#print axioms QLDPC.Packed.parityAux_eq_bitSum
+#print axioms QLDPC.Packed.pshift_testBit
+#print axioms QLDPC.Packed.unpack_pMulVecT
+#print axioms QLDPC.Packed.unpack_pMulVecS
+#print axioms QLDPC.Packed.pDot_eq_dotF2
+#print axioms QLDPC.Packed.pValidateRun_sound_transfer
+
+-- Stage B: verified word-level RTL circuits
+#print axioms QLDPC.RTL.circuits_eq_pValidateRun_inl
+#print axioms QLDPC.RTL.circuits_eq_pValidateRun_inr
