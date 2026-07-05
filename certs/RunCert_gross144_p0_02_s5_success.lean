@@ -1,3 +1,6 @@
+-- Copyright (c) 2026 Justin Arndt. All rights reserved.
+-- Licensed under the GNU GPLv3. For commercial licensing and proprietary
+-- hardware mapping, see the LICENSE file (dual-licensing notice at top).
 /-
   IRONCLAD-QLDPC per-run decode certificate  --  gross144_p0_02_s5_success
   Code: gross144 ([[144,12,12]])   Outcome claimed: SUCCESS
