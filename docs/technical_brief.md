@@ -77,9 +77,15 @@ deliverable, not a figure claimed here.
 - **Verified:** the checker's soundness theorems and the equality of the emitted
   gate netlist to the certified validator (Lean 4, zero `sorry`, standard axioms
   only; `lake build proofs.AxiomAudit`).
-- **Trusted (small, stated):** the ~100-line Verilog/JSON printer
-  (`proofs/Netlist.lean`), independently cross-checked by exact matrix equality
-  in `impl/rtl_equiv.py`.
+- **Trusted (small, stated, completely tested):** the ~100-line Verilog/JSON
+  printer (`proofs/Netlist.lean`), independently cross-checked by **complete
+  (non-sampled) matrix equality** in `impl/rtl_equiv.py` — every output bit of
+  every linear layer compared entry-by-entry against an independently constructed
+  dense ground truth. A linear map is determined by its matrix, so this test
+  catches any logical-behaviour-altering printer bug deterministically, matching
+  standard ASIC combinational equivalence-checking practice. A future hardening
+  step (see `ROADMAP.md` Stage B+) removes the printer from the trusted base
+  entirely via verified translation validation.
 - **Not verified — by design:** the decoder itself; and the physical-layer
   mapping (cell library, timing, power), which is exactly what a partner
   engagement characterizes.
