@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Justin Arndt. All rights reserved.
+# Licensed under the GNU GPLv3. For commercial licensing and proprietary
+# hardware mapping, see the LICENSE file (dual-licensing notice at top).
 """audit/chain.py -- HMAC-SHA256 hash-chained audit log (JSONL).
 
 Schema matches the base repo's audit/audit.jsonl records:
