@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Justin Arndt. All rights reserved.
+# Licensed under the GNU GPLv3. For commercial licensing and proprietary
+# hardware mapping, see the LICENSE file (dual-licensing notice at top).
 """
 structured.py -- roll-based structured implementations of the BB syndrome/stabilizer
 maps, matching proofs/BBCode.lean exactly (see codes.py docstring for the convention
