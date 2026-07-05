@@ -1,3 +1,6 @@
+-- Copyright (c) 2026 Justin Arndt. All rights reserved.
+-- Licensed under the GNU GPLv3. For commercial licensing and proprietary
+-- hardware mapping, see the LICENSE file (dual-licensing notice at top).
 /-
   IRONCLAD-QLDPC per-run decode certificate  --  code90_p0_02_s20260805_success
   Code: code90 ([[90,8,10]])   Outcome claimed: SUCCESS
