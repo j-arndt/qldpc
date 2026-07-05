@@ -7,14 +7,14 @@ name = "qldpc-cert"
 version = "0.1.0"
 description = "Kernel-checked certification of QLDPC decoder outputs: two-sided per-run certificates (Lean 4 verified checkers), HMAC-chained audit logs, and a reference BP+OSD decoder for bivariate bicycle codes."
 readme = "impl/README_impl.md"
-license = {text = "Apache-2.0"}
+license = {text = "GPL-3.0-only"}
 requires-python = ">=3.9"
 authors = [{name = "J. Arndt"}]
 keywords = ["quantum-error-correction", "qldpc", "formal-verification", "lean4", "certifying-algorithms", "bivariate-bicycle"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: Apache Software License",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Programming Language :: Python :: 3",
   "Topic :: Scientific/Engineering :: Physics",
 ]
