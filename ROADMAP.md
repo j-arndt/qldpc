@@ -59,6 +59,16 @@ independent dense construction + live-run behavioural checks + printer
 cross-check; measured 1,038–2,082 two-input gates at depth 10–11. Out of scope
 (next): gate-level synthesis flow and bitstream attestation (Stage C).
 
+### Stage B+ — verified translation validation (hardening; future)
+The ~100-line printer is currently trusted and tested (complete matrix equality
+against an independent dense construction — a linear map is determined by its
+matrix, so this test catches any logical-behaviour-altering bug deterministically,
+matching standard ASIC combinational equivalence practice). A future hardening
+step: emit to a small intermediate AST with a *verified* pretty-printer (or a
+Lean-to-Verilog reflection tactic that carries a proof term), removing the
+printer from the trusted base entirely. This is a confidence upgrade, not a
+correctness gap — the current testing is complete, not sampled.
+
 ### Stage C — attestation into the audit chain (engineering)
 The audit chain already pins checker-source hashes and per-certificate kernel
 verdicts; extend the schema with bitstream hashes and device identity so a chain
