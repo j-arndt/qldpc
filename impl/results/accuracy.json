@@ -1,0 +1,232 @@
+{
+  "suite": "accuracy",
+  "ps": [
+    0.001,
+    0.001995262314968879,
+    0.003981071705534973,
+    0.007943282347242814,
+    0.015848931924611134,
+    0.03162277660168379,
+    0.06309573444801933
+  ],
+  "results": {
+    "code72": [
+      {
+        "p": 0.001,
+        "trials": 2000,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.0019171176005129348,
+        "osd_used": 0,
+        "decode_seconds": 0.08
+      },
+      {
+        "p": 0.001995262314968879,
+        "trials": 2000,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.0019171176005129348,
+        "osd_used": 0,
+        "decode_seconds": 0.06
+      },
+      {
+        "p": 0.003981071705534973,
+        "trials": 2000,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.0019171176005129348,
+        "osd_used": 0,
+        "decode_seconds": 0.11
+      },
+      {
+        "p": 0.007943282347242814,
+        "trials": 2000,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.0019171176005129348,
+        "osd_used": 0,
+        "decode_seconds": 0.12
+      },
+      {
+        "p": 0.015848931924611134,
+        "trials": 2000,
+        "failures": 18,
+        "ler": 0.009,
+        "wilson_lo": 0.005700452646339954,
+        "wilson_hi": 0.014182156837363747,
+        "osd_used": 12,
+        "decode_seconds": 0.97
+      },
+      {
+        "p": 0.03162277660168379,
+        "trials": 2000,
+        "failures": 91,
+        "ler": 0.0455,
+        "wilson_lo": 0.03720513368317002,
+        "wilson_hi": 0.05553752621569624,
+        "osd_used": 45,
+        "decode_seconds": 1.0
+      },
+      {
+        "p": 0.06309573444801933,
+        "trials": 2000,
+        "failures": 576,
+        "ler": 0.288,
+        "wilson_lo": 0.2685750988910168,
+        "wilson_hi": 0.3082377589716006,
+        "osd_used": 303,
+        "decode_seconds": 1.15
+      }
+    ],
+    "code90": [
+      {
+        "p": 0.001,
+        "trials": 2000,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.0019171176005129348,
+        "osd_used": 0,
+        "decode_seconds": 0.06
+      },
+      {
+        "p": 0.001995262314968879,
+        "trials": 2000,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.0019171176005129348,
+        "osd_used": 0,
+        "decode_seconds": 0.07
+      },
+      {
+        "p": 0.003981071705534973,
+        "trials": 2000,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.0019171176005129348,
+        "osd_used": 0,
+        "decode_seconds": 0.09
+      },
+      {
+        "p": 0.007943282347242814,
+        "trials": 2000,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.0019171176005129348,
+        "osd_used": 0,
+        "decode_seconds": 0.14
+      },
+      {
+        "p": 0.015848931924611134,
+        "trials": 2000,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.0019171176005129348,
+        "osd_used": 2,
+        "decode_seconds": 1.16
+      },
+      {
+        "p": 0.03162277660168379,
+        "trials": 2000,
+        "failures": 18,
+        "ler": 0.009,
+        "wilson_lo": 0.005700452646339954,
+        "wilson_hi": 0.014182156837363747,
+        "osd_used": 27,
+        "decode_seconds": 1.25
+      },
+      {
+        "p": 0.06309573444801933,
+        "trials": 2000,
+        "failures": 337,
+        "ler": 0.1685,
+        "wilson_lo": 0.15273409391087453,
+        "wilson_hi": 0.1855369550582656,
+        "osd_used": 387,
+        "decode_seconds": 1.43
+      }
+    ],
+    "gross144": [
+      {
+        "p": 0.001,
+        "trials": 800,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.004779050997111869,
+        "osd_used": 0,
+        "decode_seconds": 0.03
+      },
+      {
+        "p": 0.001995262314968879,
+        "trials": 800,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.004779050997111869,
+        "osd_used": 0,
+        "decode_seconds": 0.02
+      },
+      {
+        "p": 0.003981071705534973,
+        "trials": 800,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.004779050997111869,
+        "osd_used": 0,
+        "decode_seconds": 0.06
+      },
+      {
+        "p": 0.007943282347242814,
+        "trials": 800,
+        "failures": 0,
+        "ler": 0.0,
+        "wilson_lo": 0.0,
+        "wilson_hi": 0.004779050997111869,
+        "osd_used": 0,
+        "decode_seconds": 0.08
+      },
+      {
+        "p": 0.015848931924611134,
+        "trials": 800,
+        "failures": 1,
+        "ler": 0.00125,
+        "wilson_lo": 0.0002206841055786609,
+        "wilson_hi": 0.0070464192640404275,
+        "osd_used": 1,
+        "decode_seconds": 0.7
+      },
+      {
+        "p": 0.03162277660168379,
+        "trials": 800,
+        "failures": 3,
+        "ler": 0.00375,
+        "wilson_lo": 0.001276117328493337,
+        "wilson_hi": 0.010967090786140193,
+        "osd_used": 8,
+        "decode_seconds": 0.75
+      },
+      {
+        "p": 0.06309573444801933,
+        "trials": 800,
+        "failures": 129,
+        "ler": 0.16125,
+        "wilson_lo": 0.13739381709330178,
+        "wilson_hi": 0.1883439899572415,
+        "osd_used": 162,
+        "decode_seconds": 0.84
+      }
+    ]
+  },
+  "noise_model": "code-capacity iid X",
+  "seed": 20260705
+}

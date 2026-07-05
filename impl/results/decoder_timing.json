@@ -1,0 +1,37 @@
+{
+  "suite": "decoder",
+  "batch": 256,
+  "iters": 30,
+  "rows": [
+    {
+      "code": "code72",
+      "n": 72,
+      "bp_iters_per_sec": 102881.40128104103,
+      "us_per_iter_per_trial": 9.71992981771604
+    },
+    {
+      "code": "code90",
+      "n": 90,
+      "bp_iters_per_sec": 110733.31697334803,
+      "us_per_iter_per_trial": 9.030705729159058
+    },
+    {
+      "code": "code108",
+      "n": 108,
+      "bp_iters_per_sec": 90370.6570147559,
+      "us_per_iter_per_trial": 11.065538671880168
+    },
+    {
+      "code": "gross144",
+      "n": 144,
+      "bp_iters_per_sec": 70364.85662422313,
+      "us_per_iter_per_trial": 14.211639843741962
+    },
+    {
+      "code": "code288",
+      "n": 288,
+      "bp_iters_per_sec": 34106.3535402518,
+      "us_per_iter_per_trial": 29.320050260424797
+    }
+  ]
+}

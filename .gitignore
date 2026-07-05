@@ -1,0 +1,14 @@
+# Lean build artifacts
+.lake/
+lake-manifest.json
+
+# IP Firewall (Proprietary Python / Solver Engine)
+cmha_solver.py
+solve_and_certify.py
+ztscr_scenario.py
+*.pyc
+__pycache__/
+
+# OS & Editor files
+.DS_Store
+.vscode/

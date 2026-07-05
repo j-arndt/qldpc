@@ -1,0 +1,58 @@
+{
+  "suite": "syndrome",
+  "batch": 256,
+  "reps": 20,
+  "rows": [
+    {
+      "code": "code72",
+      "n": 72,
+      "checks": 36,
+      "us_roll_numpy": 0.3783378907940005,
+      "us_roll_jax": 0.09893164065744031,
+      "us_csr": 0.14021093797111917,
+      "us_dense": 1.7048476568248816,
+      "us_fft": 3.6979101558642924
+    },
+    {
+      "code": "code90",
+      "n": 90,
+      "checks": 45,
+      "us_roll_numpy": 0.38438281180219747,
+      "us_roll_jax": 0.10414453033291693,
+      "us_csr": 0.16631054666760292,
+      "us_dense": 2.5202734370566304,
+      "us_fft": 4.936443359859766
+    },
+    {
+      "code": "code108",
+      "n": 108,
+      "checks": 54,
+      "us_roll_numpy": 0.44732812476411254,
+      "us_roll_jax": 0.13333007764515514,
+      "us_csr": 0.19421874952740836,
+      "us_dense": 2.8907167965996905,
+      "us_fft": 5.0149316397352095
+    },
+    {
+      "code": "gross144",
+      "n": 144,
+      "checks": 72,
+      "us_roll_numpy": 0.5292773437304277,
+      "us_roll_jax": 0.16534765556741604,
+      "us_csr": 0.24899023465252412,
+      "us_dense": 5.130857421598023,
+      "us_fft": 5.718414063160537
+    },
+    {
+      "code": "code288",
+      "n": 288,
+      "checks": 144,
+      "us_roll_numpy": 0.6092011712865997,
+      "us_roll_jax": 0.2779042969081047,
+      "us_csr": 0.45258203140718933,
+      "us_dense": 21.965697266423945,
+      "us_fft": 8.541078124757462
+    }
+  ],
+  "note": "CPU-only; per-syndrome medians over batched evaluation; same-machine relative comparison, not a hardware claim"
+}
