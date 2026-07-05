@@ -259,3 +259,142 @@ if __name__ == "__main__":
 
     res = certify_one_run(args.code, args.p, args.seed, args.outcome)
     print(json.dumps(res, indent=2))
+
+
+# ---------------------------------------------------------------------------
+# Stage A: packed (kernel-fast) certificates — single and batched
+# ---------------------------------------------------------------------------
+
+def pack_lm(arr_lm) -> int:
+    """Row-major bit packing: bit i*m+j = arr[i, j] (matches proofs/PackedCert.lean idx)."""
+    import numpy as _np
+    a = _np.asarray(arr_lm).astype(_np.uint8)
+    l, m = a.shape
+    v = 0
+    for i in range(l):
+        row = a[i]
+        for j in range(m):
+            if row[j]:
+                v |= 1 << (i * m + j)
+    return v
+
+
+def _packed_run_literal(code, syn_lm, corr_flat, inj_flat, outcome, witness) -> str:
+    import numpy as _np
+    import structured as _st
+    c1, c2 = _st.unflatten_qubitvec(corr_flat, code.l, code.m)
+    i1, i2 = _st.unflatten_qubitvec(inj_flat, code.l, code.m)
+    if outcome == "success":
+        w_lm = _st.unflatten_lm(_np.asarray(witness).astype(_np.uint8), code.l, code.m)
+        wit = "Sum.inl " + str(pack_lm(w_lm))
+    else:
+        z1, z2 = _st.unflatten_qubitvec(_np.asarray(witness).astype(_np.uint8), code.l, code.m)
+        wit = "Sum.inr (" + str(pack_lm(z1)) + ", " + str(pack_lm(z2)) + ")"
+    return ("⟨" + str(pack_lm(syn_lm)) + ", " + str(pack_lm(c1)) + ", " + str(pack_lm(c2))
+            + ", " + str(pack_lm(i1)) + ", " + str(pack_lm(i2)) + ", " + wit + "⟩")
+
+
+def emit_packed_batch_lean(code, runs, batch_id: str) -> str:
+    """One Lean file certifying N packed runs. `runs` is a list of dicts with keys
+    syn_lm, corr_flat, inj_flat, outcome, witness. Kernel cost: one mathlib import
+    (~40 s) + ~0.04-0.1 s per run — the Stage A speedup is realized by batching."""
+    l, m = code.l, code.m
+    G = "Fin " + str(l) + " × Fin " + str(m)
+    if code.name in NAMED_LEAN_CODES:
+        code_ref = NAMED_LEAN_CODES[code.name]
+        code_def = "-- code instance: " + code_ref + " (proofs/BBCode.lean)"
+    else:
+        code_ref = "theCode"
+        code_def = ("def theCode : QLDPC.GBCode (" + G + ") :=\n"
+                    "  ⟨⟨" + _finset_lit(code.supp_a, l, m) + "⟩,\n"
+                    "   ⟨" + _finset_lit(code.supp_b, l, m) + "⟩⟩")
+    header = [
+        "/-",
+        "  IRONCLAD-QLDPC PACKED batch certificate — " + batch_id,
+        "  " + str(len(runs)) + " decode runs on " + code.name + ", validated by the",
+        "  kernel-fast packed validator (proofs/PackedCert.lean). Soundness: each",
+        "  accepted run satisfies pValidateRun_sound_transfer, hence all conclusions",
+        "  of DecoderCert.validateRun_sound. Plain decide; zero axioms beyond the",
+        "  standard three; no native_decide.",
+        "-/",
+        "",
+        "import proofs.PackedCert",
+        "",
+        "set_option maxRecDepth 16384",
+        "",
+        "namespace PackedBatch_" + batch_id,
+        "",
+        code_def,
+        "",
+    ]
+    body = []
+    for idx_, r in enumerate(runs):
+        lit = _packed_run_literal(code, r["syn_lm"], r["corr_flat"], r["inj_flat"],
+                                  r["outcome"], r["witness"])
+        body.append("def run" + str(idx_) + " : QLDPC.Packed.PackedRun := " + lit)
+        body.append("theorem cert_valid_" + str(idx_) + " :")
+        body.append("    QLDPC.Packed.pValidateRun " + code_ref + " run" + str(idx_)
+                    + " = true := by decide")
+        body.append("#print axioms cert_valid_" + str(idx_))
+        body.append("")
+    footer = ["end PackedBatch_" + batch_id, ""]
+    return "\n".join(header + body + footer)
+
+
+def certify_batch(code_name: str, p: float, n_runs: int, seed: int) -> dict:
+    """Decode n_runs, extract two-sided witnesses, emit ONE packed batch
+    certificate, kernel-check it once, and report per-run outcomes + timing."""
+    import numpy as _np
+    import structured as _st
+    import logical as _lg
+    from decoder import decode_batch as _decode
+
+    code = get_code(code_name)
+    HX, HZ = code.HX(), code.HZ()
+    rng = _np.random.default_rng(seed)
+    err = (rng.random((n_runs, 2, code.l, code.m)) < p).astype(_np.uint8)
+    syn = _st.np_syndromeZ(code, err[:, 0], err[:, 1])
+    e_hat_flat, used_osd = _decode(code, syn, p, HZ=HZ)
+    err_flat = _st.flatten_qubitvec(err[:, 0], err[:, 1])
+
+    runs, outcomes = [], []
+    for b in range(n_runs):
+        r = (e_hat_flat[b] ^ err_flat[b]).astype(_np.uint8)
+        outcome, wit = _lg.logical_witness(HX, r)
+        outcomes.append(outcome)
+        runs.append({"syn_lm": syn[b], "corr_flat": e_hat_flat[b],
+                     "inj_flat": err_flat[b], "outcome": outcome, "witness": wit})
+
+    batch_id = code_name + "_p" + str(p).replace(".", "_") + "_s" + str(seed) + "_n" + str(n_runs)
+    src = emit_packed_batch_lean(code, runs, batch_id)
+    out_dir = REPO / "certs" / "packed"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    lean_path = out_dir / ("PackedBatch_" + batch_id + ".lean")
+    lean_path.write_text(src)
+
+    ok, dt, log, _ax = run_certcheck(lean_path)
+    ax_lines = [ln.strip() for ln in log.splitlines() if "depends on axioms" in ln]
+    STANDARD = {"propext", "Classical.choice", "Quot.sound"}
+
+    def _std(ln: str) -> bool:
+        # a certificate theorem may use a SUBSET of the standard axioms
+        # (decide-only proofs often skip Classical.choice) — never a superset.
+        try:
+            listed = ln.split("[", 1)[1].rsplit("]", 1)[0]
+            return set(a.strip() for a in listed.split(",") if a.strip()) <= STANDARD
+        except Exception:
+            return False
+
+    ax_clean = len(ax_lines) > 0 and all(_std(ln) for ln in ax_lines)
+    return {
+        "batch_id": batch_id, "code": code_name, "p": p, "seed": seed,
+        "n_runs": n_runs,
+        "n_success": outcomes.count("success"), "n_failure": outcomes.count("failure"),
+        "osd_used": int(used_osd.sum()),
+        "cert_path": str(lean_path.relative_to(REPO)),
+        "kernel_check_ok": ok,
+        "kernel_check_seconds": round(dt, 2),
+        "per_run_marginal_estimate_s": round(max(dt - 42.0, 0.05 * n_runs) / n_runs, 3),
+        "axiom_lines": len(ax_lines),
+        "axioms_all_standard": ax_clean,
+    }
