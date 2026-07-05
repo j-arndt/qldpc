@@ -1,91 +1,114 @@
-# qldpc — Kernel-Checked Certification of QLDPC Decoder Outputs
+# qldpc
 
-Formally verified, cryptographically audited certification of decoder outputs for
-**bivariate bicycle (BB) quantum LDPC codes** — the code family on current
-fault-tolerance hardware roadmaps ([[72,12,6]] through [[288,12,18]], including
-IBM's [[144,12,12]] "gross" code).
+**Kernel-checked certification of quantum LDPC decoder outputs.**
+The decoder stays heuristic and untrusted — every decode *outcome* is certified by a
+witness that a **Lean 4-verified checker** validates, at ~0.3 s per run, with a
+proof chain that extends down to **measured, synthesizable RTL**.
 
-**The architecture in one line:** the decoder stays heuristic and untrusted; every
-decode *outcome* is certified by a witness that a **formally verified checker**
-validates, the checker's soundness theorems are machine-checked in **Lean 4**, and
-every run is bound into an **HMAC-SHA256 audit chain** that pins the exact checker
-sources it was certified against.
+![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![Lean](https://img.shields.io/badge/Lean-4.28.0%20%2B%20mathlib-blueviolet)
+![Proofs](https://img.shields.io/badge/proofs-0%20sorries%20·%20standard%20axioms%20only-brightgreen)
+![Certificates](https://img.shields.io/badge/certificates-two--sided%20·%20~0.3s%2Frun-brightgreen)
+![RTL](https://img.shields.io/badge/RTL-1k--2k%20gates%20·%20depth%20≈10-informational)
+
+Targets the **bivariate bicycle (BB) codes** on current fault-tolerance hardware
+roadmaps — [[72,12,6]] through [[288,12,18]], including IBM's [[144,12,12]] "gross"
+code.
 
 ```
         untrusted / heuristic          │        verified / kernel-checked
                                        │
-   JAX BP+OSD decoder ── correction ──►│──► witness extraction (GF(2))
+   BP+OSD decoder ──── correction ────►│──► witness extraction (GF(2))
    (impl/decoder.py)                   │        │
                                        │        ▼
-   noise sampling, benchmarks          │    per-run Lean certificate (certs/)
-   (impl/bench.py)                     │    checked by plain `decide` — zero axioms
-                                       │        │
+   noise sampling, benchmarks          │    packed Lean certificate (certs/)
+   (impl/bench.py)                     │    checked by plain `decide` — no axioms
+                                       │    beyond propext + Quot.sound
         HMAC-SHA256 audit chain ◄──────┴────────┘
-        (impl/audit/) — records checker-source hashes + kernel verdicts
+        (impl/audit/) — pins checker sources + certificates + kernel verdicts
 ```
 
-**This repository builds 100% clean: zero `sorry`s, zero project axioms, zero
-`native_decide`, zero warnings.** `lake build proofs.AxiomAudit` machine-prints the
-axiom footprint of every theorem (`propext`, `Classical.choice`, `Quot.sound` only).
+## Sixty-second tour
+
+```bash
+# proofs: zero errors, zero warnings, zero sorries — and a machine-printed axiom audit
+lake exe cache get && lake build
+lake build proofs.AxiomAudit
+
+# pipeline: acceptance gate, then certify 24 live decode runs in ONE kernel check
+cd impl && pip install -r requirements.txt
+python3 crosscheck.py
+python3 -c "import certgen, json; print(json.dumps(certgen.certify_batch('gross144', 0.06, 24, 1), indent=2))"
+
+# the checker cannot be fooled: 3 forged certificates rejected, 1 soundness probe accepted
+cd .. && bash certs/attacks/run_attacks.sh
+
+# Stage B: regenerate the Verilog from Lean and verify it against ground truth
+lake env lean scripts/EmitRTL.lean && cd impl && python3 rtl_equiv.py
+```
+
+## What's in the box
+
+| Path | What it is |
+|---|---|
+| `proofs/` | Six Lean files, all theorems machine-checked (table below) |
+| `impl/` | Reference BP+OSD decoder, GF(2) witness extraction, HMAC audit chain, certificate generator, RTL equivalence harness |
+| `certs/` | Kernel-checked run certificates — single-run, **packed batches**, and the **forgery-attack demos** (`certs/attacks/`) |
+| `rtl/` | Synthesizable Verilog + JSON netlists **emitted from Lean**, plus the measured gate report |
+| `scripts/` | `EmitRTL.lean` — regenerates `rtl/` deterministically |
+| `ci/` | CI configs (copy to `.github/workflows/` to activate — see below) |
 
 ## What is proven (Lean 4 v4.28.0 + mathlib)
 
 | File | Theorems |
 |---|---|
-| `proofs/QCCirculant.lean` | **T1/T1ᵀ** sparse evaluation (O(row-weight) work per bit) = dense circulant action; F₂ pairing adjointness; translation equivariance of sparse evaluation |
-| `proofs/BBCode.lean` | **T2** CSS validity `H_X · H_Zᵀ = 0` proven **parametrically for the whole two-block group-algebra family at once** (any finite abelian group, any polynomial pair); sparse = dense syndrome bridges; **T3** syndrome maps commute with qubit translations; gross + [[72,12,6]] instances |
-| `proofs/DecoderCert.lean` | **T4** syndrome-checker soundness against dense semantics; **T6** success-witness soundness (residual is a stabilizer); **T7** failure-witness soundness (residual provably NOT a stabilizer); **T8** exclusivity — no run can carry both certificates; `validateRun_sound` master theorem incl. **residual ∈ ker H_Z** conjunct (failure = undetectable non-stabilizer = logical error); named end-to-end `decide` theorem. (A decidable weight predicate is provided as a utility — not part of the certified pipeline.) |
-| `proofs/PackedCert.lean` | **Stage A**: Nat-bitmask packed representation with unpacking theorems; proven torus-shift bit specs; fuel-structural parity = F₂ bit-sum; `pValidateRun` (pure GMP-accelerated kernel arithmetic) + **master transfer theorem** — every accepted packed certificate satisfies all of `validateRun_sound`'s conclusions |
-| `proofs/Netlist.lean` | **Stage B**: word-level RTL language whose primitive semantics are the proven packed ops; three checker circuits (production syndrome check; audit success/failure witnesses); `circuits_eq_pValidateRun_{inl,inr}` — the circuit conjunction IS the packed validator; bit-blasted Verilog + JSON emission (trusted printer, boundary stated in-file) |
-| `proofs/AxiomAudit.lean` | Machine-recorded axiom footprint of every theorem above (Stage A/B theorems need only `[propext, Quot.sound]`) |
+| `proofs/QCCirculant.lean` | **T1/T1ᵀ** sparse evaluation (O(row-weight) work per bit) = dense circulant action; F₂ pairing adjointness; translation equivariance |
+| `proofs/BBCode.lean` | **T2** CSS validity `H_X · H_Zᵀ = 0` proven **parametrically for the whole two-block group-algebra family at once**; sparse = dense syndrome bridges; **T3** translation equivariance of the syndrome maps; gross + [[72,12,6]] instances |
+| `proofs/DecoderCert.lean` | **T4** syndrome-checker soundness against dense semantics; **T6/T7** two-sided witness soundness (success: residual is a stabilizer; failure: residual provably is NOT); **T8** exclusivity; `validateRun_sound` master theorem incl. residual ∈ ker H_Z (failure = undetectable non-stabilizer = logical error) |
+| `proofs/PackedCert.lean` | **Stage A**: Nat-bitmask packed checker (pure GMP-accelerated kernel arithmetic) with proven torus-shift bit specs and the **master transfer theorem** — accepted packed certificates inherit every conclusion of `validateRun_sound` |
+| `proofs/Netlist.lean` | **Stage B**: word-level RTL language whose primitive semantics are the proven packed ops; `circuits_eq_pValidateRun_{inl,inr}` — the emitted circuit **is** the packed validator; Verilog/JSON printers (trusted-printer boundary stated in-file) |
+| `proofs/AxiomAudit.lean` | Machine-printed axiom footprint of every theorem above — Stage A/B need only `[propext, Quot.sound]` |
 
-**Two-sided certification** is the point: decoding **success** is witnessed by an
-explicit stabilizer combination (`H_Xᵀ w = r`), decoding **failure** by an explicit
-anticommuting logical (`H_X z = 0`, `⟨z,r⟩ = 1`) — so a decoder failure is a
-kernel-checked mathematical fact, not a statistic. Measured certificate check
-times (CPU, plain `decide`): semantic single-run certs 34–65 s; **Stage A packed
-batch certs ≈0.26–0.4 s per run marginal** (24-run gross-code batch incl. a
-failure certificate: 48 s total — one mathlib import amortized over the batch).
-Every emitted certificate carries named theorems plus `#print axioms`, so each
-certificate self-reports its own axiom footprint into the audit record.
+**Two-sided certification is the point.** Success is witnessed by an explicit
+stabilizer combination (`H_Xᵀw = r`); **failure** is witnessed by an explicit
+anticommuting logical (`H_X z = 0`, `⟨z,r⟩ = 1`). A decoder failure becomes a
+kernel-checked mathematical fact, not a statistic — and no run can carry both
+certificates (proven).
 
-## What is measured (not claimed as theorems)
+## Measured results (not theorems — see honesty box)
 
-- Syndrome evaluation via structured rolls: **17–79× faster than dense** matvec and
-  **13–33× faster than a fair, fully-batched FFT baseline** at n = 72–288, with
-  near-linear scaling (CPU, batch 256, medians; see `impl/results/`).
-- BP throughput: ~103k iterations/s (n=72) → ~34k (n=288), batched CPU.
-- Code-capacity logical-error curves (iid X, BP60+OSD-0, Wilson 95% intervals) for
-  [[72,12,6]], [[90,8,10]], [[144,12,12]] — every point recorded in a verified
-  HMAC audit chain; sampled runs additionally kernel-certified.
-- **Stage B gate report** (from the Lean-emitted netlists, `impl/rtl_equiv.py`):
-  full four-output checker ≈ **1,038 two-input gates, depth ≈10** ([[72,12,6]])
-  and **2,082 gates, depth ≈11** ([[144,12,12]]) — the ROADMAP's "~10³ gates"
-  estimate, measured. All linear layers verified by **exact matrix equality**
-  against the independent dense construction (complete, not sampled).
+| Metric | Value |
+|---|---|
+| Packed certificate cost | **≈0.26–0.4 s per run marginal** (24-run gross batch incl. a failure cert: 48 s total); semantic single-run form: 34–65 s |
+| Checker circuit size | **1,038 gates @ depth ≈10** ([[72,12,6]]) · **2,082 gates @ depth ≈11** ([[144,12,12]]) — from the Lean-emitted netlists |
+| Syndrome evaluation (CPU, batch 256) | structured rolls **17–79× vs dense**, **13–33× vs a fair fully-batched FFT** |
+| BP throughput (CPU) | ~103k iters/s (n=72) → ~34k (n=288) |
+| Logical error rate | code-capacity iid-X curves for [[72]]/[[90]]/[[144]] with Wilson 95% intervals — JSON in `impl/results/` (plots regenerate via `bench.py`), every point HMAC-chained |
+| Forgery resistance | `certs/attacks/`: garbage high bits, forged success witness, corrupted syndrome — **all rejected by the kernel**; one unbounded-but-sound witness probe correctly accepted |
 
 ## Honesty box (read before quoting)
 
-- The decoder is **not** verified — by design (certifying-algorithms paradigm,
-  McConnell–Mehlhorn–Näher–Schweitzer). No convergence, threshold, or
-  decoder-performance theorems exist here. BP+OSD-0 is a reference decoder, below
-  state of the art.
+- The **decoder is not verified — by design** (certifying-algorithms paradigm,
+  McConnell–Mehlhorn–Näher–Schweitzer). No convergence, threshold, or performance
+  theorems exist here; BP+OSD-0 is a reference decoder, below state of the art.
 - Accuracy numbers are **code-capacity iid-X only**; no measurement/circuit noise.
 - Certificates certify the **recorded** run data; binding records to physical
   hardware events (attested I/O) is out of scope.
-- The audit chain is tamper-evident **under a secret HMAC key**; the demo chain
-  uses a disclosed dev key (and says so in its own genesis record). Its real
-  guarantee is that it pins every artifact (checker sources, certificates) a third
-  party needs to **re-verify independently**: `verify_chain.py --recheck-certs`,
-  then re-run `lake env lean` on any pinned certificate.
+- The audit chain is tamper-evident **under a secret HMAC key**; the demo chain uses
+  a disclosed dev key (and says so in its own genesis record). Its real guarantee is
+  **independent re-verifiability**: it pins every artifact a third party needs —
+  `verify_chain.py --recheck-certs`, then re-run `lake env lean` on any pinned cert.
 - Failure witnesses require the injected error — i.e. simulation / injected-error
-  audit campaigns; in production, syndrome-consistency certificates apply per-run.
-- Certificate checking is on-demand (~40 s each via plain `decide`), not real-time.
-- Trusted base: the Lean kernel + mathlib, and the correspondence between the
-  in-repo polynomial supports and the physical BB codes (a human-checked convention,
-  cross-validated in `impl/crosscheck.py` against an independent dense construction).
+  audit campaigns; in production, syndrome-consistency certificates apply per shot.
+- Stage B's Verilog/JSON **printers are trusted** (≈100 lines; boundary stated in
+  `proofs/Netlist.lean`); the emitted netlist is independently verified by exact
+  matrix equality against a from-scratch dense construction, live-run behavioural
+  checks, and a printer cross-check (`impl/rtl_equiv.py`).
+- Trusted base: the Lean kernel + mathlib, and the human-checked correspondence
+  between the in-repo polynomial supports and the physical BB codes
+  (cross-validated four independent ways in `impl/crosscheck.py`).
 
-## Reproduce everything
+## Full reproduction
 
 ```bash
 # 1. Lean toolchain + proofs
@@ -96,53 +119,55 @@ lake build proofs.AxiomAudit               # prints every theorem's axiom footpr
 # 2. Python pipeline
 cd impl && pip install -r requirements.txt
 python3 crosscheck.py                      # acceptance gate: ALL CODES, ALL CHECKS PASSED
-python3 bench.py --suite all               # ~5 min CPU: timings, LER curves, audit chain,
-                                           #   kernel-checked certificates
+python3 bench.py --suite all               # ~5 min CPU: timings, LER curves, audit chain
 python3 audit/verify_chain.py --recheck-certs .. results/audit_bench.jsonl
 
-# 3. Certify a fresh decode run yourself (semantic single-run form)
-python3 certgen.py --code gross144 --p 0.02 --seed 42
+# 3. Certify decode runs yourself
+python3 certgen.py --code gross144 --p 0.02 --seed 42                     # single run
+python3 -c "import certgen, json; print(json.dumps(certgen.certify_batch('gross144', 0.06, 24, 1), indent=2))"  # batch
 
-# 4. Stage A: batch-certify 24 runs in ONE kernel check (~0.3 s/run marginal)
-python3 -c "import certgen, json; print(json.dumps(certgen.certify_batch('gross144', 0.06, 24, 1), indent=2))"
-
-# 5. Stage B: emit RTL from Lean and run the equivalence harness
+# 4. Stage B round-trip
 cd .. && lake env lean scripts/EmitRTL.lean && cd impl && python3 rtl_equiv.py
 ```
 
-## Provenance & positioning
-
-This work grew out of the [ironclad](https://github.com/j-arndt/ironclad)
-verification sandbox (circulant block-diagonal algebra + HMAC audit chains); the
-QLDPC certification layer here is self-contained and depends only on mathlib.
-Development was adversarially reviewed in two fresh-context audit rounds before
-release; among other checks, hand-built bogus certificates (forged witnesses,
-misreported syndromes) are **rejected by the Lean kernel**, as the soundness
-theorems require.
-
-Positioning relative to nearby work: [Lean-QEC](https://arxiv.org/abs/2605.16523)
-certifies *static* code properties (minimum distance) for the same code families —
-complementary to run-level decoder-output certification; Infotheo (Coq) verified
-*classical* LDPC sum-product decoding; hash-chain notarization of opaque quantum
-outputs (e.g. Λ-Spira) pins custody but not machine-checked semantics.
+All seeds fixed in-source; results deterministic given the same numpy/scipy.
 
 ## Roadmap
 
-Where this goes: per-shot certification at microsecond scale with a verified
-checker compiled to hardware — see [ROADMAP.md](ROADMAP.md). **Stage A (kernel-fast
-packed checker) and Stage B (verified word-level RTL + emitted Verilog, within the
-stated trusted-printer boundary) are complete in this repository**; the measured
-checker is ~1–2k two-input gates at depth ~10, so the hardware endgame's
-complexity budget is confirmed, not estimated.
+The endgame is **per-shot certification at line rate with a verified checker in
+hardware** — see [ROADMAP.md](ROADMAP.md). Stage A (kernel-fast packed checker) and
+Stage B (verified word-level RTL, within the stated trusted-printer boundary) are
+**complete in this repository**; the measured checker is 1–2k two-input gates at
+depth ~10, so the hardware endgame's complexity budget is confirmed, not estimated.
+Next: bitstream attestation (Stage C), checker on the syndrome bus (Stage D), plus
+production-decoder integration and circuit-level noise.
+
+## Provenance & positioning
+
+Grew out of the [ironclad](https://github.com/j-arndt/ironclad) verification
+sandbox; the certification layer here is self-contained and depends only on
+mathlib. Adversarially reviewed in fresh-context audit rounds before release;
+hand-built bogus certificates are **rejected by the Lean kernel**, as the
+soundness theorems require (see `certs/attacks/`).
+
+Nearby work: [Lean-QEC](https://arxiv.org/abs/2605.16523) certifies *static* code
+properties (minimum distance) for the same code families — complementary to
+run-level decoder-output certification. Infotheo (Coq) verified *classical* LDPC
+sum-product decoding. Hash-chain notarization of opaque quantum outputs (e.g.
+Λ-Spira) pins custody but not machine-checked semantics.
 
 ## Continuous integration
 
-CI configs live in [`ci/`](ci/) (`ci/lean.yml`, `ci/python.yml`): the Lean job
-builds all proofs and **fails on any `sorry` or any non-standard axiom**; the
-Python job runs the acceptance gate, the RTL equivalence harness, and the audit
-chain self-test. To activate, copy them to `.github/workflows/` in your clone
-(they ship under `ci/` because the automated release path cannot write to
-`.github/workflows/`).
+CI configs live in [`ci/`](ci/): the Lean job builds all proofs and **fails on any
+`sorry` or any non-standard axiom**; the Python job runs the acceptance gate, the
+RTL equivalence harness, and the audit chain self-test. To activate, copy them to
+`.github/workflows/` in your clone (the automated release path cannot write to
+that directory).
+
+## Citing
+
+See [CITATION.cff](CITATION.cff). Python package name: `qldpc-cert`
+([pyproject.toml](pyproject.toml)).
 
 ## License
 
