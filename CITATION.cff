@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: "qldpc: Kernel-Checked Certification of QLDPC Decoder Outputs"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: Arndt
+    given-names: J.
+repository-code: "https://github.com/j-arndt/qldpc"
+license: Apache-2.0
+keywords:
+  - quantum error correction
+  - qLDPC
+  - formal verification
+  - Lean 4
+  - certifying algorithms
+abstract: >-
+  Formally verified, cryptographically audited certification of decoder
+  outputs for bivariate bicycle quantum LDPC codes. Lean 4 verified checkers
+  with two-sided (success and failure) per-run witnesses; kernel-fast packed
+  certificates; verified word-level RTL with measured gate counts; HMAC-chained
+  audit logs enabling independent re-verification.
