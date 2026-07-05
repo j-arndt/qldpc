@@ -1,3 +1,6 @@
+-- Copyright (c) 2026 Justin Arndt. All rights reserved.
+-- Licensed under the GNU GPLv3. For commercial licensing and proprietary
+-- hardware mapping, see the LICENSE file (dual-licensing notice at top).
 /- ADVERSARIAL PROBE 4 (grader): run0 valid (residual 0), but the SUCCESS witness
    carries a garbage high bit: Sum.inl (2^40). Since `w` has NO bounds guard in
    pValidateRun, this probes whether an unbounded witness can (a) cause UNSOUNDNESS
