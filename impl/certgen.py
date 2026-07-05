@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Justin Arndt. All rights reserved.
+# Licensed under the GNU GPLv3. For commercial licensing and proprietary
+# hardware mapping, see the LICENSE file (dual-licensing notice at top).
 """certgen.py -- emit + kernel-check Lean 4 per-run decode certificates.
 
 For one decode run (observed syndrome, decoder correction, injected error, and the
@@ -105,6 +108,8 @@ def emit_cert_lean(
         raise ValueError("outcome must be 'success' or 'failure', got " + repr(outcome))
 
     src = "\n".join([
+        "-- Copyright (c) 2026 Justin Arndt. All rights reserved.",
+        "-- Licensed under the GNU GPLv3; see the LICENSE file (dual-licensing notice).",
         "/-",
         "  IRONCLAD-QLDPC per-run decode certificate  --  " + run_id,
         "  Code: " + code.name + " ([[" + str(code.n) + "," + str(code.k_expected) + ","
@@ -309,6 +314,8 @@ def emit_packed_batch_lean(code, runs, batch_id: str) -> str:
                     "  ⟨⟨" + _finset_lit(code.supp_a, l, m) + "⟩,\n"
                     "   ⟨" + _finset_lit(code.supp_b, l, m) + "⟩⟩")
     header = [
+        "-- Copyright (c) 2026 Justin Arndt. All rights reserved.",
+        "-- Licensed under the GNU GPLv3; see the LICENSE file (dual-licensing notice).",
         "/-",
         "  IRONCLAD-QLDPC PACKED batch certificate — " + batch_id,
         "  " + str(len(runs)) + " decode runs on " + code.name + ", validated by the",
