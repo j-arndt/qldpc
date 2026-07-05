@@ -35,15 +35,19 @@ axiom footprint of every theorem (`propext`, `Classical.choice`, `Quot.sound` on
 | `proofs/QCCirculant.lean` | **T1/T1ᵀ** sparse evaluation (O(row-weight) work per bit) = dense circulant action; F₂ pairing adjointness; translation equivariance of sparse evaluation |
 | `proofs/BBCode.lean` | **T2** CSS validity `H_X · H_Zᵀ = 0` proven **parametrically for the whole two-block group-algebra family at once** (any finite abelian group, any polynomial pair); sparse = dense syndrome bridges; **T3** syndrome maps commute with qubit translations; gross + [[72,12,6]] instances |
 | `proofs/DecoderCert.lean` | **T4** syndrome-checker soundness against dense semantics; **T6** success-witness soundness (residual is a stabilizer); **T7** failure-witness soundness (residual provably NOT a stabilizer); **T8** exclusivity — no run can carry both certificates; `validateRun_sound` master theorem incl. **residual ∈ ker H_Z** conjunct (failure = undetectable non-stabilizer = logical error); named end-to-end `decide` theorem. (A decidable weight predicate is provided as a utility — not part of the certified pipeline.) |
-| `proofs/AxiomAudit.lean` | Machine-recorded axiom footprint of every theorem above |
+| `proofs/PackedCert.lean` | **Stage A**: Nat-bitmask packed representation with unpacking theorems; proven torus-shift bit specs; fuel-structural parity = F₂ bit-sum; `pValidateRun` (pure GMP-accelerated kernel arithmetic) + **master transfer theorem** — every accepted packed certificate satisfies all of `validateRun_sound`'s conclusions |
+| `proofs/Netlist.lean` | **Stage B**: word-level RTL language whose primitive semantics are the proven packed ops; three checker circuits (production syndrome check; audit success/failure witnesses); `circuits_eq_pValidateRun_{inl,inr}` — the circuit conjunction IS the packed validator; bit-blasted Verilog + JSON emission (trusted printer, boundary stated in-file) |
+| `proofs/AxiomAudit.lean` | Machine-recorded axiom footprint of every theorem above (Stage A/B theorems need only `[propext, Quot.sound]`) |
 
 **Two-sided certification** is the point: decoding **success** is witnessed by an
 explicit stabilizer combination (`H_Xᵀ w = r`), decoding **failure** by an explicit
 anticommuting logical (`H_X z = 0`, `⟨z,r⟩ = 1`) — so a decoder failure is a
 kernel-checked mathematical fact, not a statistic. Measured certificate check
-times (CPU, plain `decide`): [[72]] 34–65 s, [[144]] 34–44 s, both branches. Every
-emitted certificate carries a named `cert_valid` theorem plus `#print axioms`, so
-each certificate self-reports its own axiom footprint into the audit record.
+times (CPU, plain `decide`): semantic single-run certs 34–65 s; **Stage A packed
+batch certs ≈0.26–0.4 s per run marginal** (24-run gross-code batch incl. a
+failure certificate: 48 s total — one mathlib import amortized over the batch).
+Every emitted certificate carries named theorems plus `#print axioms`, so each
+certificate self-reports its own axiom footprint into the audit record.
 
 ## What is measured (not claimed as theorems)
 
@@ -54,6 +58,11 @@ each certificate self-reports its own axiom footprint into the audit record.
 - Code-capacity logical-error curves (iid X, BP60+OSD-0, Wilson 95% intervals) for
   [[72,12,6]], [[90,8,10]], [[144,12,12]] — every point recorded in a verified
   HMAC audit chain; sampled runs additionally kernel-certified.
+- **Stage B gate report** (from the Lean-emitted netlists, `impl/rtl_equiv.py`):
+  full four-output checker ≈ **1,038 two-input gates, depth ≈10** ([[72,12,6]])
+  and **2,082 gates, depth ≈11** ([[144,12,12]]) — the ROADMAP's "~10³ gates"
+  estimate, measured. All linear layers verified by **exact matrix equality**
+  against the independent dense construction (complete, not sampled).
 
 ## Honesty box (read before quoting)
 
@@ -91,8 +100,14 @@ python3 bench.py --suite all               # ~5 min CPU: timings, LER curves, au
                                            #   kernel-checked certificates
 python3 audit/verify_chain.py --recheck-certs .. results/audit_bench.jsonl
 
-# 3. Certify a fresh decode run yourself
+# 3. Certify a fresh decode run yourself (semantic single-run form)
 python3 certgen.py --code gross144 --p 0.02 --seed 42
+
+# 4. Stage A: batch-certify 24 runs in ONE kernel check (~0.3 s/run marginal)
+python3 -c "import certgen, json; print(json.dumps(certgen.certify_batch('gross144', 0.06, 24, 1), indent=2))"
+
+# 5. Stage B: emit RTL from Lean and run the equivalence harness
+cd .. && lake env lean scripts/EmitRTL.lean && cd impl && python3 rtl_equiv.py
 ```
 
 ## Provenance & positioning
@@ -109,16 +124,25 @@ Positioning relative to nearby work: [Lean-QEC](https://arxiv.org/abs/2605.16523
 certifies *static* code properties (minimum distance) for the same code families —
 complementary to run-level decoder-output certification; Infotheo (Coq) verified
 *classical* LDPC sum-product decoding; hash-chain notarization of opaque quantum
-outputs (e.g. Λ-Spira) pins custody but not machine-checked semantics. A paper
-draft covering the design and measurements is in preparation.
+outputs (e.g. Λ-Spira) pins custody but not machine-checked semantics.
 
 ## Roadmap
 
 Where this goes: per-shot certification at microsecond scale with a verified
-checker compiled to hardware — see [ROADMAP.md](ROADMAP.md) for the staged path
-(kernel-fast Nat-packed checker → verified RTL → attested bitstreams → checker
-on the syndrome bus) and why the intrinsic checker complexity (~10³ XOR gates)
-makes it reachable.
+checker compiled to hardware — see [ROADMAP.md](ROADMAP.md). **Stage A (kernel-fast
+packed checker) and Stage B (verified word-level RTL + emitted Verilog, within the
+stated trusted-printer boundary) are complete in this repository**; the measured
+checker is ~1–2k two-input gates at depth ~10, so the hardware endgame's
+complexity budget is confirmed, not estimated.
+
+## Continuous integration
+
+CI configs live in [`ci/`](ci/) (`ci/lean.yml`, `ci/python.yml`): the Lean job
+builds all proofs and **fails on any `sorry` or any non-standard axiom**; the
+Python job runs the acceptance gate, the RTL equivalence harness, and the audit
+chain self-test. To activate, copy them to `.github/workflows/` in your clone
+(they ship under `ci/` because the automated release path cannot write to
+`.github/workflows/`).
 
 ## License
 
