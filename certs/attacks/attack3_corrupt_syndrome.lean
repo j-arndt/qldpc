@@ -1,3 +1,6 @@
+-- Copyright (c) 2026 Justin Arndt. All rights reserved.
+-- Licensed under the GNU GPLv3. For commercial licensing and proprietary
+-- hardware mapping, see the LICENSE file (dual-licensing notice at top).
 /- ADVERSARIAL TEST 3 (grader): run0 valid, but the observed syndrome has bit0
    flipped (1216421904 -> 1216421905). The correction no longer reproduces the
    observed syndrome, so checkSyndromeZ fails. Kernel must REJECT. -/
