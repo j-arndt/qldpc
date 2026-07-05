@@ -1,3 +1,6 @@
+-- Copyright (c) 2026 Justin Arndt. All rights reserved.
+-- Licensed under the GNU GPLv3. For commercial licensing and proprietary
+-- hardware mapping, see the LICENSE file (dual-licensing notice at top).
 /- ADVERSARIAL TEST 2 (grader): run4 is a genuine FAILURE run (nonzero residual,
    Sum.inr witness). Here we forge a SUCCESS claim with the zero witness Sum.inl 0.
    xStab(0) = (0,0) but the residual r2 = corr2 ^ inj2 = 105382146 ^ 155714562 != 0,
