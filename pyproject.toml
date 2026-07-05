@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qldpc-cert"
+version = "0.1.0"
+description = "Kernel-checked certification of QLDPC decoder outputs: two-sided per-run certificates (Lean 4 verified checkers), HMAC-chained audit logs, and a reference BP+OSD decoder for bivariate bicycle codes."
+readme = "impl/README_impl.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+authors = [{name = "J. Arndt"}]
+keywords = ["quantum-error-correction", "qldpc", "formal-verification", "lean4", "certifying-algorithms", "bivariate-bicycle"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = ["numpy>=2.0", "scipy>=1.13", "matplotlib>=3.9"]
+
+[project.optional-dependencies]
+jax = ["jax>=0.4.30"]
+
+[project.urls]
+Homepage = "https://github.com/j-arndt/qldpc"
+Issues = "https://github.com/j-arndt/qldpc/issues"
+
+[tool.setuptools]
+package-dir = {"qldpc_cert" = "impl"}
+packages = ["qldpc_cert", "qldpc_cert.audit"]
+
+[project.scripts]
+qldpc-certify = "qldpc_cert.certgen:main_cli"
