@@ -1,0 +1,31 @@
+# Copyright (c) 2026 Justin Arndt. GNU GPLv3; see LICENSE.
+# Yosys: map the Lean-emitted, CMOS-agnostic checker netlist onto RSFQ
+# superconducting-logic primitives. Run:  yosys -s synth_sfq.ys
+# Requires: yosys, and RSFQlib fetched via ./fetch_libs.sh (adjust paths to the
+# RSFQlib version you fetched -- file names differ across releases).
+
+read_verilog ../hardware/gross144_checker.v
+hierarchy -check -top gross144_checker
+
+# lower operators to a primitive gate topology (the checker is pure XOR/AND/OR + reductions)
+flatten
+proc; opt; fsm; opt; memory; opt; techmap; opt
+
+# --- RSFQ technology mapping (open SunMagnetics/ColdFlux cells) --------------
+# The checker's logical primitives (XOR2, AND2, OR2, reduction trees) map onto
+# RSFQ splitter/merger/JTL/XOR cells. Point these at your fetched RSFQlib files:
+#   read_verilog -lib RSFQlib/verilog/RSFQlib.v          # behavioural cell models
+#   abc -liberty  RSFQlib/liberty/RSFQlib.lib            # timing/mapping library
+# (File layout is version-dependent; see RSFQlib/README. For a commercial
+#  integration, swap in the target foundry's proprietary SFQ/ERSFQ cell library
+#  here -- no other change to this flow is required.)
+read_verilog -lib RSFQlib/verilog/RSFQlib.v
+abc -liberty RSFQlib/liberty/RSFQlib.lib
+
+# clock-tree / splitter insertion for RSFQ fan-out is handled by the ColdFlux
+# flow downstream (RSFQ is a pulse logic: every fan-out needs a splitter cell).
+clean
+opt_clean -purge
+stat
+
+write_verilog compiled_sfq_netlist.v
