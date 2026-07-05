@@ -34,18 +34,30 @@ latency.** This document is the honest engineering path between the two.
 
 ## Stages
 
-### Stage A — kernel-fast verified checker (software; weeks-scale)
+### Stage A — kernel-fast verified checker — ✅ COMPLETE (proofs/PackedCert.lean)
 Re-express the checkers over `Nat`-packed bit vectors (`Nat.xor`, `Nat.land`,
 popcount); prove packed = semantic (extending the T1/T4 bridge pattern); target
 **sub-second `decide`** per certificate, plus batched certificates (N runs per
 file) to amortize import cost. Deliverable: same guarantees, ~100× lower cost,
 enabling certification of full test campaigns rather than sampled runs.
+**Delivered**: packed validator with master transfer theorem (axioms:
+propext + Quot.sound only); measured 0.26–0.4 s/run marginal in batches
+(24-run gross batch incl. failure cert: 48 s total). Kernel lessons learned and
+documented in-file: well-founded recursion does not kernel-reduce (parity is
+fuel-structural); log2-derived fuel reintroduces WF (fuel is a width literal).
 
-### Stage B — verified/equivalence-checked RTL (research-grade)
+### Stage B — verified/equivalence-checked RTL — ✅ COMPLETE within stated scope (proofs/Netlist.lean + rtl/ + impl/rtl_equiv.py)
 Export the packed checker as a golden model; produce RTL whose equivalence to the
 model is machine-checked (SymbiYosys-style equivalence against a Lean-exported
 netlist semantics, or a Cava/Kôika-inspired construction). Deliverable: a checker
 bitstream with a proof chain back to the same Lean theorems in this repository.
+**Delivered (scope)**: word-level RTL language with primitive semantics equal to
+the proven packed operations; `circuits_eq_pValidateRun` theorems; bit-blasted
+Verilog/JSON emitted from Lean (trusted printer, ~100 lines, boundary stated);
+equivalence harness with EXACT matrix equality on all linear layers vs the
+independent dense construction + live-run behavioural checks + printer
+cross-check; measured 1,038–2,082 two-input gates at depth 10–11. Out of scope
+(next): gate-level synthesis flow and bitstream attestation (Stage C).
 
 ### Stage C — attestation into the audit chain (engineering)
 The audit chain already pins checker-source hashes and per-certificate kernel
