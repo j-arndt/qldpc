@@ -1,0 +1,20 @@
+name: python-pipeline
+on: [push, pull_request]
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - name: Install
+        run: pip install numpy scipy matplotlib jax
+      - name: Acceptance gate (crosscheck)
+        run: cd impl && python3 crosscheck.py
+      - name: Decoder smoke test
+        run: cd impl && python3 decoder.py
+      - name: RTL equivalence harness
+        run: cd impl && python3 rtl_equiv.py
+      - name: Audit chain self-test
+        run: cd impl && python3 audit/verify_chain.py --recheck-certs .. results/audit_bench.jsonl
