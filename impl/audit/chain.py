@@ -37,6 +37,8 @@ PROOF_FILES = [
     "proofs/QCCirculant.lean",
     "proofs/BBCode.lean",
     "proofs/DecoderCert.lean",
+    "proofs/PackedCert.lean",
+    "proofs/Netlist.lean",
     "proofs/AxiomAudit.lean",
     "lean-toolchain",
 ]
