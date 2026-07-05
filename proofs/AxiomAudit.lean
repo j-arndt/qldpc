@@ -26,6 +26,7 @@ import proofs.BBCode
 import proofs.DecoderCert
 import proofs.PackedCert
 import proofs.Netlist
+import proofs.GenericCert
 
 -- F1: circulant algebra bridge
 #print axioms QCCirculant.circulant_mulVec
@@ -68,3 +69,11 @@ import proofs.Netlist
 -- Stage B: verified word-level RTL circuits
 #print axioms QLDPC.RTL.circuits_eq_pValidateRun_inl
 #print axioms QLDPC.RTL.circuits_eq_pValidateRun_inr
+
+-- GenericCert: matrix-generic two-sided certification (phenomenological noise)
+#print axioms QLDPC.GenericCert.checkSyn_sound
+#print axioms QLDPC.GenericCert.checkSuccess_sound
+#print axioms QLDPC.GenericCert.dot_transpose
+#print axioms QLDPC.GenericCert.checkFailure_sound
+#print axioms QLDPC.GenericCert.witness_exclusive_generic
+#print axioms QLDPC.GenericCert.validateGenericRun_sound
