@@ -102,10 +102,17 @@ certificates (proven).
   `verify_chain.py --recheck-certs`, then re-run `lake env lean` on any pinned cert.
 - Failure witnesses require the injected error — i.e. simulation / injected-error
   audit campaigns; in production, syndrome-consistency certificates apply per shot.
-- Stage B's Verilog/JSON **printers are trusted** (≈100 lines; boundary stated in
-  `proofs/Netlist.lean`); the emitted netlist is independently verified by exact
-  matrix equality against a from-scratch dense construction, live-run behavioural
-  checks, and a printer cross-check (`impl/rtl_equiv.py`).
+- Stage B's Verilog/JSON **printers are trusted** (≈100 lines of string assembly;
+  boundary stated in `proofs/Netlist.lean`). The emitted netlist is independently
+  verified by **complete (non-sampled) matrix equality**: `impl/rtl_equiv.py`
+  builds every linear layer's matrix entry-by-entry from the emitted tap indices
+  and compares it against a from-scratch dense construction (`codes.py`'s
+  `build_HX_naive` / `build_HZ_naive`). A linear map is determined by its matrix,
+  so this test is *complete* — any printer bug that alters logical behaviour is
+  caught deterministically, matching or exceeding standard ASIC equivalence-
+  checking practice for combinational blocks. Live-run behavioural checks (with
+  adversarial corruption) and a Verilog↔JSON printer cross-check provide
+  additional defence-in-depth.
 - Trusted base: the Lean kernel + mathlib, and the human-checked correspondence
   between the in-repo polynomial supports and the physical BB codes
   (cross-validated four independent ways in `impl/crosscheck.py`).
