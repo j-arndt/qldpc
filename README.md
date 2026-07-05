@@ -5,7 +5,7 @@ The decoder stays heuristic and untrusted — every decode *outcome* is certifie
 witness that a **Lean 4-verified checker** validates, at ~0.3 s per run, with a
 proof chain that extends down to **measured, synthesizable RTL**.
 
-![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![License](https://img.shields.io/badge/license-GPLv3%20(dual)-blue)
 ![Lean](https://img.shields.io/badge/Lean-4.28.0%20%2B%20mathlib-blueviolet)
 ![Proofs](https://img.shields.io/badge/proofs-0%20sorries%20·%20standard%20axioms%20only-brightgreen)
 ![Certificates](https://img.shields.io/badge/certificates-two--sided%20·%20~0.3s%2Frun-brightgreen)
@@ -54,8 +54,10 @@ lake env lean scripts/EmitRTL.lean && cd impl && python3 rtl_equiv.py
 | `proofs/` | Six Lean files, all theorems machine-checked (table below) |
 | `impl/` | Reference BP+OSD decoder, GF(2) witness extraction, HMAC audit chain, certificate generator, RTL equivalence harness |
 | `certs/` | Kernel-checked run certificates — single-run, **packed batches**, and the **forgery-attack demos** (`certs/attacks/`) |
-| `rtl/` | Synthesizable Verilog + JSON netlists **emitted from Lean**, plus the measured gate report |
-| `scripts/` | `EmitRTL.lean` — regenerates `rtl/` deterministically |
+| `hardware/` | Synthesizable Verilog + JSON netlists **emitted from Lean**, plus the measured gate report |
+| `scripts/` | `EmitRTL.lean` — regenerates `hardware/` deterministically |
+| `simulations/` | Open-source cryogenic emulation pipeline (Yosys→RSFQ, JoSIM, cocotb) + a runnable streaming demo — zero proprietary parameters |
+| `docs/` | `technical_brief.md` — zero-trust co-processor blueprints (SEEQC / Riverlane / IBM) + 90-day integration SOW |
 | `ci/` | CI configs (copy to `.github/workflows/` to activate — see below) |
 
 ## What is proven (Lean 4 v4.28.0 + mathlib)
@@ -169,6 +171,34 @@ that directory).
 See [CITATION.cff](CITATION.cff). Python package name: `qldpc-cert`
 ([pyproject.toml](pyproject.toml)).
 
+## Commercial roadmap — 90-day integration
+
+Available for a fixed-fee, 90-day integration contract. Because the whole
+synthesis/validation stack is open-source (Yosys, JoSIM, cocotb, the GPLv3
+RSFQlib), **no proprietary vendor IP or foundry data is required to begin.**
+
+1. **Days 1–30 — matrix ingestion & port mapping:** map the client's QLDPC
+   variants into Lean; verified two-sided-witness proofs for their code spaces;
+   syndrome-bus interface spec.
+2. **Days 31–60 — target-cell synthesis & timing:** retarget the RTL from the
+   open RSFQlib to the client's cells (CMOS / FPGA LUTs / SFQ / ERSFQ); Yosys/DC
+   mapping + JoSIM/SPICE timing and a first power estimate on their process.
+3. **Days 61–90 — testbench, audit chaining & handoff:** HMAC-chained audit
+   logging, a cocotb/SystemVerilog suite with 100% failure-witness coverage, and
+   a pre-validated macro package ready for tapeout or bitstream.
+
+Full blueprints (SEEQC / Riverlane / IBM) and the measured-vs-target ledger:
+[`docs/technical_brief.md`](docs/technical_brief.md). Paid exclusive evaluation
+and a netlist walkthrough available on request — **justinarndt05@gmail.com**.
+
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+**GNU GPLv3, with a commercial dual-licensing option** — see [LICENSE](LICENSE).
+
+Open-source, academic, and non-commercial use is free under GPL-3.0. Incorporating
+the RTL, the Lean proofs, or the synthesis scripts into a **proprietary** control
+stack, FPGA bitstream, ASIC tapeout, or closed-source tool triggers GPL-3.0's
+copyleft (source-disclosure + anti-tivoization) obligations. A commercial licence
+removes them: see [`docs/technical_brief.md`](docs/technical_brief.md) for the
+zero-trust co-processor blueprints and the 90-day integration SOW, or contact
+**Justin Arndt — justinarndt05@gmail.com**.
