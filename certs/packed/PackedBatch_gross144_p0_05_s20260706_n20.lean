@@ -1,3 +1,6 @@
+-- Copyright (c) 2026 Justin Arndt. All rights reserved.
+-- Licensed under the GNU GPLv3. For commercial licensing and proprietary
+-- hardware mapping, see the LICENSE file (dual-licensing notice at top).
 /-
   IRONCLAD-QLDPC PACKED batch certificate — gross144_p0_05_s20260706_n20
   20 decode runs on gross144, validated by the
