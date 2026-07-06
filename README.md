@@ -35,9 +35,11 @@ code.
 lake exe cache get && lake build
 lake build proofs.AxiomAudit
 
+# install the package (or: cd impl && pip install -r requirements.txt)
+pip install qldpc-cert
+
 # pipeline: acceptance gate, then certify 24 live decode runs in ONE kernel check
-cd impl && pip install -r requirements.txt
-python3 crosscheck.py
+cd impl && python3 crosscheck.py
 python3 -c "import certgen, json; print(json.dumps(certgen.certify_batch('gross144', 0.06, 24, 1), indent=2))"
 
 # the checker cannot be fooled: 3 forged certificates rejected, 1 soundness probe accepted
@@ -173,10 +175,28 @@ RTL equivalence harness, and the audit chain self-test. To activate, copy them t
 `.github/workflows/` in your clone (the automated release path cannot write to
 that directory).
 
-## Citing
+## Install
 
-See [CITATION.cff](CITATION.cff). Python package name: `qldpc-cert`
-([pyproject.toml](pyproject.toml)).
+```bash
+pip install qldpc-cert
+```
+
+[![PyPI](https://img.shields.io/pypi/v/qldpc-cert)](https://pypi.org/project/qldpc-cert/)
+
+```python
+from qldpc_cert import get_code, certify_run, certify_batch, certify_spacetime_run
+
+# single code-capacity run (kernel-checked by Lean)
+result = certify_run("gross144", p=0.02, seed=42)
+
+# batch: 24 runs in ONE kernel check (~0.3 s/run marginal)
+batch = certify_batch("gross144", p=0.06, n_runs=24, seed=1)
+
+# phenomenological noise (measurement errors)
+phenom = certify_spacetime_run(get_code("code72"), d=2, p_data=0.005, p_meas=0.005, seed=99)
+```
+
+See [CITATION.cff](CITATION.cff) for citing this work.
 
 ## Commercial roadmap — 90-day integration
 
